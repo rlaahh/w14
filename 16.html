@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reframed | Some Comfort Gained from the Acceptance of the Inherent Lies in Everything</title>
+    <script>
+        // Typekit 로더 코드
+        (function(d) {
+          var config = {
+            kitId: 'vub7iix',
+            scriptTimeout: 3000,
+            async: true
+          },
+          h = d.documentElement,
+          t = setTimeout(function() {
+            h.className = h.className.replace(/\bwf-loading\b/g, "") + " wf-inactive";
+          }, config.scriptTimeout),
+          tk = d.createElement("script"),
+          f = false,
+          s = d.getElementsByTagName("script")[0],
+          a;
+
+          h.className += " wf-loading";
+          tk.src = 'https://use.typekit.net/' + config.kitId + '.js';
+          tk.async = true;
+
+          tk.onload = tk.onreadystatechange = function() {
+            a = this.readyState;
+            if (f || a && a != "complete" && a != "loaded") return;
+            f = true;
+            clearTimeout(t);
+            try {
+              Typekit.load(config)
+            } catch (e) {}
+          };
+          
+          s.parentNode.insertBefore(tk, s);
+        })(document);
+      </script>
+    <style>
+        body {
+            cursor: none; 
+            min-height: 100vh;
+            background: #ffffff;
+            margin: 0;
+            position: relative;
+            text-align: center; 
+            font-family: neue-haas-grotesk-display, sans-serif;
+            font-weight: 500;
+            font-style: normal;
+        }
+
+        /* 커스텀 커서 스타일 */
+        .custom-cursor {
+            width: 20px; 
+            height: 20px;
+            border-radius: 50%;
+            background-color: #ffffff; 
+            position: fixed; 
+            pointer-events: none; 
+            z-index: 9999; 
+            transform: translate(-50%, -50%); 
+            transition: transform 0.1s ease-out; 
+            mix-blend-mode: difference; 
+            opacity: 1; 
+            will-change: transform; 
+        }
+
+        /* 이미지 슬라이더 스타일 */
+        .comparison-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            z-index: 50;
+            cursor: none; 
+            display: inline-block; 
+        }
+        
+        /* 애니메이션을 위한 오버레이 스타일 (흰색 마스크) */
+        .reveal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 55; 
+            
+            clip-path: circle(0% at 50% 50%); 
+            background: #ffffff; 
+            transition: clip-path 1.5s ease-out; 
+        }
+        
+        .comparison-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        
+        /* image-before: 50% 분할 상태를 CSS로 유지 */
+        .image-before {
+            z-index: 10;
+            clip-path: inset(0 50% 0 0); 
+        }
+        .image-after {
+            z-index: 1;
+        }
+        
+        .slider-handle {
+            position: absolute;
+            z-index: 60; 
+            top: 0;
+            left: 50%;
+            width: 0px; 
+            height: 100%;
+            background-color: transparent; 
+            cursor: none; 
+            transform: translateX(-50%);
+            transition: left 0.15s ease-out; 
+        }
+        .slider-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px; 
+            height: 120px; 
+            background: none; 
+            background-image: url('r2.png'); 
+            background-size: contain; 
+            background-repeat: no-repeat; 
+            background-position: center; 
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 236, 197, 0.8);
+            z-index: 21; 
+        }
+        
+        ::selection {
+            background: transparent; 
+            color: inherit;
+        }
+
+        /* ---------------------------------- */
+        /* 👇 새 정보 컨테이너 스타일 */
+        .info-container {
+            position: fixed; 
+            bottom: 0;
+            left: 0;
+            right: 0; 
+            min-width: 100vw; 
+            
+            height: 50px; 
+            display: flex; 
+            pointer-events: none; 
+            z-index: 90; 
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-before, .info-after {
+            height: 100%;
+            transition: width 0.15s ease-out; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; 
+            flex-shrink: 0; 
+        }
+        
+        .info-before {
+            background: #F1E4CA;
+        }
+
+        .info-after {
+            background: #000000;
+        }
+
+        .info-text-before, .info-text-after {
+            padding: 0 50px; 
+            font-size: 0.9rem;
+            text-align: center;
+            white-space: nowrap; 
+            font-family: neue-haas-grotesk-display, sans-serif;
+            font-weight: 500;
+            font-style: normal;
+            transition: opacity 0.3s ease-in-out; 
+            line-height: 1.2;
+        }
+
+        .info-text-after {
+            color: #F1E4CA;
+        }
+        /* ---------------------------------- */
+
+        /* 'X' 버튼 스타일 */
+        .close-button {
+            position: fixed; 
+            top: 20px;
+            right: 20px;
+            width: 40px; 
+            height: 40px;
+            border-radius: 50%; 
+            background-color: #F1E4CA; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer; 
+            z-index: 100; 
+            transition: transform 0.1s; 
+        }
+        
+        /* 'X' 텍스트만 미세 조정 (이제 텍스트가 아니므로 제거) */
+        /* .x-text { display: inline-block; transform: translateY(-3px); } */
+        
+        .close-button:hover {
+            transform: scale(1.1); 
+        }
+        
+        /* 👇 탐색 버튼 스타일 */
+        .nav-button {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background-color: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 95; 
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+            user-select: none;
+            pointer-events: none; 
+        }
+
+        /* 버튼 활성화 스타일 */
+        .nav-button.active {
+            pointer-events: auto;
+        }
+
+        .nav-button:hover {
+            background-color: transparent;
+            color: #000000;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .prev-button {
+            left: 10px;
+            border-radius: 50%;
+        }
+
+        .next-button {
+            right: 10px;
+            border-radius: 50%;
+        }
+
+        /* 💡 새로 추가될 아이콘 이미지에 대한 공통 스타일 */
+        .icon-img {
+            width: 80%; 
+            height: 80%;
+            object-fit: contain; 
+        }
+
+        /* close-button 내부의 icon-img는 검정색이어야 하므로 filter를 제거 */
+        .close-button .icon-img {
+            filter: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-cursor" id="custom-cursor"></div>
+    
+    <div id="three-container"></div>
+    
+    <div class="comparison-container" id="my-container">
+        <div class="reveal-overlay" id="reveal-overlay">
+            <img class="image-before" src="web-source/16.jpg" alt="Before Image"> 
+            <img class="image-after" src="web-source/16-1.jpg" alt="After Image">
+        </div>
+        
+        <div class="slider-handle" id="my-slider">
+        </div>
+    </div>
+
+    <div class="close-button" id="closeButton">
+        <img src="close.svg" alt="Close" class="icon-img"> 
+    </div>
+
+    <div class="nav-button prev-button" id="prevButton">
+        <img src="arrow_back.svg" alt="Previous" class="icon-img">
+    </div>
+    <div class="nav-button next-button" id="nextButton">
+        <img src="arrow_forward.svg" alt="Next" class="icon-img">
+    </div>
+
+    <div class="info-container" id="info-container">
+        <div class="info-before" id="info-before">
+            <div class="info-text-before"></div>
+        </div>
+        <div class="info-after" id="info-after">
+            <div class="info-text-after"></div>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('my-container');
+        const slider = document.getElementById('my-slider');
+        const imageBefore = container.querySelector('.image-before');
+        const revealOverlay = document.getElementById('reveal-overlay');
+        
+        const infoContainer = document.getElementById('info-container');
+        const infoBefore = document.getElementById('info-before');
+        const infoAfter = document.getElementById('info-after');
+        const infoTextBefore = infoBefore.querySelector('.info-text-before');
+        const infoTextAfter = infoAfter.querySelector('.info-text-after');
+
+        const customCursor = document.getElementById('custom-cursor');
+        const closeButton = document.getElementById('closeButton');
+        
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+
+        const HIDE_THRESHOLD_PERCENT = 20; 
+
+        // --- 페이지 번호 동적 계산 로직 ---
+        const getCurrentPageNumber = () => {
+            const path = window.location.pathname;
+            const fileName = path.substring(path.lastIndexOf('/') + 1); 
+            const numberMatch = fileName.match(/\d+/); 
+            return numberMatch ? parseInt(numberMatch[0], 10) : 0;
+        };
+
+        const currentPageNumber = getCurrentPageNumber();
+        const PREV_PAGE_URL = (currentPageNumber - 1) + '.html';
+        const NEXT_PAGE_URL = (currentPageNumber + 1) + '.html';
+        
+        if (currentPageNumber <= 1) {
+            prevButton.style.display = 'none'; 
+        }
+        // ------------------------------------
+
+        // --- 설명 내용 ---
+        const textBefore = 'Damien Hirst, Some Comfort Gained from the Acceptance of the Inherent Lies in Everything, 1996.<br><span style="font-size:0.8rem;font-family: pretendard, sans-serif; font-weight: 500; font-style: normal;">데미안 허스트, 모든 것에 내재하는 거짓말을 받아들임으로써 얻어지는 약간의 편안함들, 1996.</span>';
+        const textAfter = `Tarsem Singh, The Cell, 2000.<br><span style="font-size:0.8rem;font-family: pretendard, sans-serif; font-weight: 500; font-style: normal;">타셈 싱, 더 셀, 2000.</span>`;
+        //             주의: 문자열을 백틱(`` ` ``)으로 감쌌습니다.        
+        infoTextBefore.innerHTML = textBefore;
+        infoTextAfter.innerHTML = textAfter;
+
+        let isDragging = false; 
+        let animationComplete = false; 
+
+        const initialPercentage = 50;
+        infoBefore.style.width = initialPercentage + '%';
+        infoAfter.style.width = (100 - initialPercentage) + '%';
+        infoTextBefore.style.opacity = '1';
+        infoTextAfter.style.opacity = '1';
+
+        const updateCursor = (x, y) => {
+            customCursor.style.left = `${x}px`;
+            customCursor.style.top = `${y}px`;
+        };
+        
+        const onDrag = (e) => {
+            if (!animationComplete) return; 
+            if (!isDragging) return; 
+            
+            let clientX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
+            if (clientX === undefined) return;
+
+            const rect = container.getBoundingClientRect();
+            let newX = clientX - rect.left;
+            
+            if (newX < 0) newX = 0;
+            if (newX > rect.width) newX = rect.width;
+            
+            const percentage = (newX / rect.width) * 100;
+            
+            slider.style.left = percentage + '%';
+            imageBefore.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+            
+            infoBefore.style.width = percentage + '%';
+            infoAfter.style.width = (100 - percentage) + '%';
+            
+            if (percentage < HIDE_THRESHOLD_PERCENT) {
+                infoTextBefore.style.opacity = '0';
+            } else {
+                infoTextBefore.style.opacity = '1';
+            }
+
+            if ((100 - percentage) < HIDE_THRESHOLD_PERCENT) {
+                infoTextAfter.style.opacity = '0';
+            } else {
+                infoTextAfter.style.opacity = '1';
+            }
+        };
+        
+        document.addEventListener('mousemove', (e) => {
+            updateCursor(e.clientX, e.clientY);
+            if (isDragging) { onDrag(e); }
+            const isOverSlider = slider.contains(e.target);
+            const isOverCloseButton = closeButton.contains(e.target);
+            const isOverPrev = prevButton.contains(e.target);
+            const isOverNext = nextButton.contains(e.target);
+
+            if ((isOverSlider || isOverCloseButton || isOverPrev || isOverNext) && !isDragging) {
+                customCursor.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            } else if (!isDragging) {
+                customCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+            }
+        });
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) { updateCursor(e.touches[0].clientX, e.touches[0].clientY); }
+            if (isDragging) { onDrag(e); }
+        }, { passive: true });
+        
+        const startDrag = (e) => { 
+            if (!animationComplete) return; 
+            isDragging = true; 
+            e.preventDefault(); 
+            document.body.style.cursor = 'none'; 
+            customCursor.style.transform = 'translate(-50%, -50%) scale(1.2)'; 
+        };
+        
+        const stopDrag = () => { 
+            isDragging = false; 
+            document.body.style.cursor = ''; 
+            customCursor.style.transform = 'translate(-50%, -50%) scale(1)'; 
+        };
+
+        slider.addEventListener('mousedown', startDrag);
+        document.addEventListener('mouseup', stopDrag); 
+        slider.addEventListener('touchstart', (e) => {
+            startDrag(e);
+            onDrag(e);
+        }, { passive: true });
+        document.addEventListener('touchend', stopDrag, { passive: true });
+
+        closeButton.addEventListener('click', () => {
+            window.location.href = 'index.html'; 
+        });
+
+        prevButton.addEventListener('click', () => {
+            if (animationComplete && currentPageNumber > 1) {
+                window.location.href = PREV_PAGE_URL;
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (animationComplete) { // 마지막 페이지 제한은 현재 구현되지 않음 (다음 페이지가 없으면 404가 뜸)
+                window.location.href = NEXT_PAGE_URL;
+            }
+        });
+
+        const runRevealAnimation = () => {
+            const finalClipPath = `circle(120% at 50% 50%)`;
+
+            requestAnimationFrame(() => {
+                revealOverlay.style.clipPath = finalClipPath;
+            });
+
+            setTimeout(() => {
+                animationComplete = true; 
+                revealOverlay.style.clipPath = 'none';
+                revealOverlay.style.zIndex = '1'; 
+                
+                prevButton.classList.add('active');
+                nextButton.classList.add('active');
+                
+            }, 500); 
+        };
+        
+        runRevealAnimation();
+    });
+</script>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+            }
+        }
+    </script>
+</body>
+</html>

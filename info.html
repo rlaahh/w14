@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reframed | Info</title>
+<script>
+    (function(d) {
+      var config = {
+        kitId: 'vub7iix',
+        scriptTimeout: 3000,
+        async: true
+      },
+      h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+    })(document);
+  </script>
+<style>
+    body { margin: 0; padding: 0; background-color: #000000; }
+    .scroll-section { height: 3000vh; position: relative; }
+    .pin-container { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+
+    .scroll-wrapper {
+        width: 100%; 
+        height: 50vh; 
+        display: flex; 
+        overflow: visible; 
+        box-sizing: border-box; 
+        justify-content: flex-start;
+        position: relative;
+    }
+
+    .art-wrapper { height: auto; }
+    .movie-wrapper {
+        position: fixed;   
+        bottom: 0;        
+        left: 0;
+        width: 100%;
+        height: 50vh;     
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        overflow: visible;
+        margin: 0;
+        padding: 0;
+        z-index: 10;
+    }
+    .movie-content .image-item { align-items: flex-end; }
+
+    .scroll-content {
+        display: flex; height: 100%; gap: 0; will-change: transform;
+        padding-left: 0; padding-right: 0; 
+    }
+
+    .image-item { 
+        flex: 0 0 240px; 
+        height: 100%; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+
+    .image-item img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain; 
+        width: auto;
+        height: auto;
+        transition: transform 0.2s;
+    }
+
+    /* ✨ 추가된 부분: 화면 중앙 고정 이미지 */
+    .center-focus {
+        position: fixed;
+        top: 50%; 
+        left: 50%; 
+        transform: translate(-50%, -50%); 
+        width: 150px; 
+        height: 150px; 
+        z-index: 100; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+        box-shadow: 0 0 20px rgba(255, 236, 197, 0.8);
+        border-radius: 50%; 
+        overflow: hidden;
+        pointer-events: none; 
+    }
+
+    .center-focus img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; 
+    }
+
+    /* 커스텀 커서 스타일 */
+    .custom-cursor {
+            width: 20px; 
+            height: 20px;
+            border-radius: 50%;
+            background-color: #ffffff; 
+            position: fixed; 
+            pointer-events: none; 
+            z-index: 9999; 
+            transform: translate(-50%, -50%); 
+            transition: transform 0.1s ease-out; 
+            mix-blend-mode: difference; 
+            opacity: 1; 
+            will-change: transform; 
+        }
+        
+       /* ---------------------------------- */
+        /* 👇 메뉴 바 스타일 */
+        
+        /* 1. 하단 메뉴 바 내부의 햄버거 아이콘 (토글 버튼 역할) */
+        .hamburger-icon {
+            width: 50px; 
+            height: 50px;
+            background-color: #000000;
+            border-radius: 50%; 
+            cursor: pointer;
+            z-index: 10; 
+            flex-shrink: 0; 
+            position: absolute; 
+            left: 0;
+            transition: opacity 0.3s ease; 
+            display: flex; /* SVG 중앙 정렬을 위해 추가 */
+            justify-content: center;
+            align-items: center;
+        }
+        .hamburger-icon:hover {
+            transform: scale(1.05);
+        }
+
+        /* 💡 SVG 아이콘 스타일 */
+        .hamburger-icon img {
+            width: 50%; /* SVG 크기 */
+            height: 50%;
+        }
+
+        /* 2. 확장된 메뉴 바 컨테이너 (하단 검은색 바) */
+        .menu-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            width: 50px; 
+            height: 50px; 
+            background-color: #000000;
+            border-radius: 30px;
+            z-index: 900;
+            transform: translateX(-50%);
+            transition: width 0.5s ease-in-out, border-radius 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; 
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 3. 메뉴 링크 */
+        .menu-links {
+            display: flex;
+            gap: 40px;
+            opacity: 0;
+            padding: 0 0px 0 40px; 
+            transition: opacity 0.3s 0.3s; 
+        }
+        
+        .menu-link {
+            text-decoration: none;
+            color: #f1e4ca;
+            font-size: 1rem;
+            white-space: nowrap;
+            font-family: neue-haas-grotesk-display, sans-serif;
+font-weight: 500;
+font-style: normal;
+        }
+
+        /* 4. 'X' 닫기 버튼 */
+        .menu-close {
+            position: absolute;
+            right: 0;
+            width: 50px; 
+            height: 50px;
+            background: none;
+            color: #f1e4ca;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0; 
+            transition: opacity 0.3s;
+        }
+
+        /* 5. 메뉴 확장 상태 */
+        .menu-container.expanded {
+            width: 240px; 
+            border-radius: 50px; 
+            justify-content: space-between; 
+        }
+        
+        .menu-container.expanded .menu-links {
+            opacity: 1;
+        }
+    /* 스크롤바 숨기기 */
+    body::-webkit-scrollbar { display: none; }
+    body { scrollbar-width: none; -ms-overflow-style: none; }
+</style>
+</head>
+<body>
+    <div class="custom-cursor" id="custom-cursor"></div>
+    
+    <div class="menu-container" id="menuContainer">
+        <div class="hamburger-icon" id="hamburgerIcon">
+            <img src="menu.svg" alt="Menu" class="menu-svg-icon">
+        </div>
+        
+        <div class="menu-links" id="menuLinks">
+            <a href="index.html" class="menu-link">Reframed</a>
+            <a href="archive.html" class="menu-link">Info</a>
+        </div>
+        <div class="menu-close" id="menuClose">
+            &times;
+        </div>
+    </div>
+    
+<div class="scroll-section" id="scrollSection">
+    <div class="pin-container">
+        <div class="scroll-wrapper art-wrapper">
+            <div class="scroll-content art-content" id="artContent"></div>
+        </div>
+        
+        <div class="center-focus">
+            <img src="r2.png" alt="중앙 포커스 이미지">
+        </div>
+        
+        <div class="scroll-wrapper movie-wrapper">
+            <div class="scroll-content movie-content" id="movieContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const scrollSection = document.getElementById('scrollSection');
+        const artContent = document.getElementById('artContent');
+        const movieContent = document.getElementById('movieContent');
+    
+        const numItems = 30;     
+        const loops = 2;         
+        const totalItems = numItems * loops; 
+    
+        const itemWidth = 240; 
+        const gap = 0; 
+        const itemTotalWidth = itemWidth + gap;
+        const contentTotalLength = totalItems * itemTotalWidth; 
+        const totalTravelDistance = (totalItems - 1) * itemTotalWidth; 
+        
+        const loopPoint = totalItems / loops * itemTotalWidth; 
+        const loopOffset = totalTravelDistance / loops; 
+    
+        const artOffsetX = 0; 
+    
+        // 자동 스크롤 관련 변수
+        let autoScrollSpeed = 0.5; 
+        let autoScrollAnimation;
+        let isScrolling = false; 
+        let currentArtTranslate = 0;
+        let currentMovieTranslate = 0;
+    
+        function createItems() {
+            artContent.innerHTML = '';
+            movieContent.innerHTML = '';
+            for (let loop = 0; loop < loops; loop++) {
+                for (let i = 1; i <= numItems; i++) {
+                    const artImageNumber = numItems - i + 1;
+                    const artItem = document.createElement('div');
+                    artItem.className = 'image-item';
+                    const artImg = document.createElement('img');
+                    artImg.src = `web-source/${artImageNumber}.jpg`;
+                    artImg.alt = `명화 ${artImageNumber}`;
+                    artItem.appendChild(artImg);
+                    artContent.appendChild(artItem);
+    
+                    const movieItem = document.createElement('div');
+                    movieItem.className = 'image-item';
+                    const movieImg = document.createElement('img');
+                    movieImg.src = `web-source/${i}-1.jpg`;
+                    movieImg.alt = `영화 ${i}-1`;
+                    movieItem.appendChild(movieImg);
+                    movieContent.appendChild(movieItem);
+                }
+            }
+        }
+    
+        createItems();
+        artContent.style.width = `${contentTotalLength}px`;
+        movieContent.style.width = `${contentTotalLength}px`;
+    
+        let artInitialTranslate;
+        let movieInitialTranslate;
+        let maxScroll;
+        
+        const scrollRange = scrollSection.offsetHeight - window.innerHeight;
+
+        // ⭐ 시작 지점을 60%로 설정
+        const startPercentage = 0.6; // 60%
+        const loopStartScroll = scrollRange * startPercentage; 
+    
+        function calculateInitialTranslate() {
+            const wrapperHalfWidth = window.innerWidth / 2;
+            const itemHalfWidth = itemWidth / 2;
+    
+            // maxScroll 재계산
+            maxScroll = scrollSection.offsetHeight - window.innerHeight;
+
+            // 초기 위치는 설정된 loopStartScroll (60%) 지점에 해당하는 이미지 위치
+            const centerScrollOffset = loopStartScroll;
+            const scrollProgress = centerScrollOffset / maxScroll;
+    
+            artInitialTranslate = -totalTravelDistance - itemHalfWidth + wrapperHalfWidth - gap + artOffsetX;
+            movieInitialTranslate = wrapperHalfWidth - itemHalfWidth;
+
+            // 자동 스크롤 시작 전에 초기 위치 설정 (60% 진행도 반영)
+            currentArtTranslate = artInitialTranslate + (totalTravelDistance * scrollProgress);
+            currentMovieTranslate = movieInitialTranslate - (totalTravelDistance * scrollProgress);
+
+            artContent.style.transform = `translateX(${currentArtTranslate}px)`;
+            movieContent.style.transform = `translateX(${currentMovieTranslate}px)`;
+
+            // 초기 로드 시 하이라이트 적용 (사용자 스크롤 상태와 동일하게)
+            highlightCenter(); 
+        }
+
+        // 이미지 중앙 하이라이트 효과 (TranslateY)
+        function highlightCenter() {
+            const centerX = window.innerWidth / 2;
+            const maxMove = 80;
+    
+            // artContent 하이라이트
+            artContent.querySelectorAll('.image-item').forEach(item => {
+                const r = item.getBoundingClientRect();
+                const itemCenter = r.left + r.width / 2;
+                const dist = Math.abs(centerX - itemCenter);
+                const moveY = Math.max(0, maxMove * (1 - dist / 200));
+                item.style.transform = `translateY(${moveY}px)`;
+            });
+    
+            // movieContent 하이라이트
+            movieContent.querySelectorAll('.image-item').forEach(item => {
+                const r = item.getBoundingClientRect();
+                const itemCenter = r.left + r.width / 2;
+                const dist = Math.abs(centerX - itemCenter);
+                const moveY = Math.max(0, maxMove * (1 - dist / 200));
+                item.style.transform = `translateY(${-moveY}px)`;
+            });
+        }
+        
+        // 하이라이트 효과 제거 (자동 스크롤 전환 시 사용)
+        function resetHighlight() {
+            artContent.querySelectorAll('.image-item').forEach(item => {
+                item.style.transform = `translateY(0px)`;
+            });
+            movieContent.querySelectorAll('.image-item').forEach(item => {
+                item.style.transform = `translateY(0px)`;
+            });
+        }
+    
+        // 사용자 수직 스크롤 처리
+        function updateScrollPosition() {
+            isScrolling = true; 
+            cancelAnimationFrame(autoScrollAnimation); 
+
+            const rect = scrollSection.getBoundingClientRect();
+            let scrollOffset = -rect.top;
+            
+            // 수직 스크롤 루프 (루프 시작 지점과 끝 지점 근처에서 순간 이동)
+            if (scrollOffset >= (maxScroll - 10)) { 
+                window.scrollTo({ top: loopStartScroll, behavior: 'instant' });
+                scrollOffset = loopStartScroll;
+            } else if (scrollOffset <= 10) { 
+                 window.scrollTo({ top: maxScroll - loopStartScroll, behavior: 'instant' });
+                scrollOffset = maxScroll - loopStartScroll;
+            }
+    
+            const clampedScroll = Math.max(0, Math.min(scrollOffset, maxScroll));
+            const scrollProgress = clampedScroll / maxScroll;
+    
+            currentArtTranslate = artInitialTranslate + (totalTravelDistance * scrollProgress);
+            currentMovieTranslate = movieInitialTranslate - (totalTravelDistance * scrollProgress);
+    
+            artContent.style.transform = `translateX(${currentArtTranslate}px)`;
+            movieContent.style.transform = `translateX(${currentMovieTranslate}px)`;
+    
+            // 스크롤 중에는 하이라이트 적용
+            highlightCenter();
+
+            // 스크롤이 끝난 후 하이라이트를 리셋하고 자동 스크롤을 다시 시작
+            clearTimeout(window.scrollTimeout);
+            window.scrollTimeout = setTimeout(() => {
+                resetHighlight(); // 자동 스크롤로 전환하기 전에 하이라이트 제거
+                isScrolling = false;
+                startAutoScroll();
+            }, 100); 
+        }
+
+        // 수평 자동 스크롤 함수
+        function startAutoScroll() {
+            if (isScrolling) return; 
+
+            // 애니메이션 루프
+            function animate() {
+                // artContent는 오른쪽으로 (translateX 증가)
+                currentArtTranslate += autoScrollSpeed;
+                // movieContent는 왼쪽으로 (translateX 감소)
+                currentMovieTranslate -= autoScrollSpeed;
+
+                // 콘텐츠가 루프 포인트를 벗어나면 위치를 재설정하여 무한 루프처럼 보이게 함
+                const contentHalfLength = contentTotalLength / loops;
+                
+                // artContent 루프 처리
+                if (currentArtTranslate > artInitialTranslate + contentHalfLength) {
+                    currentArtTranslate -= contentHalfLength;
+                }
+                // movieContent 루프 처리
+                if (currentMovieTranslate < movieInitialTranslate - contentHalfLength) {
+                    currentMovieTranslate += contentHalfLength;
+                }
+                
+                artContent.style.transform = `translateX(${currentArtTranslate}px)`;
+                movieContent.style.transform = `translateX(${currentMovieTranslate}px)`;
+                
+                // 자동 스크롤 중에는 highlightCenter 호출하지 않음
+
+                autoScrollAnimation = requestAnimationFrame(animate);
+            }
+            autoScrollAnimation = requestAnimationFrame(animate);
+        }
+    
+        // 초기 설정 및 시작
+        maxScroll = scrollSection.offsetHeight - window.innerHeight; 
+        calculateInitialTranslate();
+    
+        // ⭐ 시작을 루프의 60% 지점으로 설정
+        window.scrollTo({
+            top: loopStartScroll,
+            behavior: "instant"
+        });
+        
+        // 초기 위치에서 바로 자동 스크롤 시작 전에 하이라이트 제거
+        resetHighlight();
+        startAutoScroll();
+    
+        // 사용자 스크롤 이벤트에 연결
+        window.addEventListener('scroll', updateScrollPosition);
+        window.addEventListener('resize', () => {
+            cancelAnimationFrame(autoScrollAnimation); 
+            calculateInitialTranslate();
+            updateScrollPosition();
+            startAutoScroll(); 
+        });
+    });
+
+    // --- 8. 메뉴 바 로직 ---
+    const hamburgerIcon = document.getElementById('hamburgerIcon');
+        const menuContainer = document.getElementById('menuContainer');
+        const menuClose = document.getElementById('menuClose');
+        
+        function toggleMenu() {
+            const isExpanded = menuContainer.classList.toggle('expanded');
+            
+            if (isExpanded) {
+                 // 확장되면 닫기 버튼이 보임
+                 menuClose.style.opacity = '1';
+                 menuClose.style.pointerEvents = 'auto';
+                 hamburgerIcon.style.opacity = '0'; // 햄버거 아이콘 숨김
+                 hamburgerIcon.style.pointerEvents = 'none';
+            } else {
+                 // 축소되면 닫기 버튼이 숨겨짐
+                 menuClose.style.opacity = '0';
+                 menuClose.style.pointerEvents = 'none';
+                 hamburgerIcon.style.opacity = '1'; // 햄버거 아이콘 표시
+                 hamburgerIcon.style.pointerEvents = 'auto';
+            }
+        }
+
+        // 햄버거 아이콘 클릭 시 메뉴 확장/축소
+        hamburgerIcon.addEventListener('click', toggleMenu);
+        
+        // 'X' 버튼 클릭 시 메뉴 축소
+        menuClose.addEventListener('click', toggleMenu);
+    </script>
+
+</body>
+</html>

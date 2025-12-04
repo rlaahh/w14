@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reframed</title>
+    <script>
+        (function(d) {
+          var config = {
+            kitId: 'vub7iix',
+            scriptTimeout: 3000,
+            async: true
+          },
+          h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+        })(document);
+      </script>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            cursor: none;
+        }
+        canvas { 
+            display: block; 
+        }
+
+        /* 커스텀 커서 스타일 */
+        .custom-cursor {
+            width: 20px; 
+            height: 20px;
+            border-radius: 50%;
+            background-color: #ffffff; 
+            position: fixed; 
+            pointer-events: none; 
+            z-index: 9999; 
+            transform: translate(-50%, -50%); 
+            transition: transform 0.1s ease-out; 
+            mix-blend-mode: difference; 
+            opacity: 1; 
+            will-change: transform; 
+        }
+        
+        /* ---------------------------------- */
+        /* 👇 메뉴 바 스타일 */
+        
+        /* 1. 하단 메뉴 바 내부의 햄버거 아이콘 (토글 버튼 역할) */
+        .hamburger-icon {
+            width: 50px; 
+            height: 50px;
+            background-color: #000000;
+            border-radius: 50%; 
+            cursor: pointer;
+            z-index: 10; 
+            flex-shrink: 0; 
+            position: absolute; 
+            left: 0;
+            transition: opacity 0.3s ease; 
+            display: flex; /* SVG 중앙 정렬을 위해 추가 */
+            justify-content: center;
+            align-items: center;
+        }
+        .hamburger-icon:hover {
+            transform: scale(1.05);
+        }
+
+        /* 💡 SVG 아이콘 스타일 */
+        .hamburger-icon img {
+            width: 50%; /* SVG 크기 */
+            height: 50%;
+        }
+
+        /* 2. 확장된 메뉴 바 컨테이너 (하단 검은색 바) */
+        .menu-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            width: 50px; 
+            height: 50px; 
+            background-color: #000000;
+            border-radius: 30px;
+            z-index: 900;
+            transform: translateX(-50%);
+            transition: width 0.5s ease-in-out, border-radius 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; 
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 3. 메뉴 링크 */
+        .menu-links {
+            display: flex;
+            gap: 40px;
+            opacity: 0;
+            padding: 0 0px 0 40px; 
+            transition: opacity 0.3s 0.3s; 
+        }
+        
+        .menu-link {
+            text-decoration: none;
+            color: #f1e4ca;
+            font-size: 1rem;
+            white-space: nowrap;
+            font-family: neue-haas-grotesk-display, sans-serif;
+font-weight: 500;
+font-style: normal;
+        }
+
+        /* 4. 'X' 닫기 버튼 */
+        .menu-close {
+            position: absolute;
+            right: 0;
+            width: 50px; 
+            height: 50px;
+            background: none;
+            color: #f1e4ca;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0; 
+            transition: opacity 0.3s;
+        }
+
+        /* 5. 메뉴 확장 상태 */
+        .menu-container.expanded {
+            width: 240px; 
+            border-radius: 50px; 
+            justify-content: space-between; 
+        }
+        
+        .menu-container.expanded .menu-links {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-cursor" id="custom-cursor"></div>
+    
+    <div class="menu-container" id="menuContainer">
+        <div class="hamburger-icon" id="hamburgerIcon">
+            <img src="menu.svg" alt="Menu" class="menu-svg-icon">
+        </div>
+        
+        <div class="menu-links" id="menuLinks">
+            <a href="index.html" class="menu-link">Reframed</a>
+            <a href="archive.html" class="menu-link">Info</a>
+        </div>
+        <div class="menu-close" id="menuClose">
+            &times;
+        </div>
+    </div>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        
+        // 💡 커스텀 커서 요소 가져오기
+        const customCursor = document.getElementById('custom-cursor');
+
+        // --- 1. 기본 설정 ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000); 
+
+        const yawObject = new THREE.Object3D();
+        yawObject.position.set(0, 0, 0);
+        yawObject.add(camera); 
+        scene.add(yawObject);  
+        
+        camera.position.set(0, 0, 0); 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0xffffff);
+        renderer.setPixelRatio(window.devicePixelRatio); 
+        document.body.appendChild(renderer.domElement);
+
+        // 환경 맵 (반사) 설정
+        const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256, { 
+            format: THREE.RGBAFormat,
+            generateMipmaps: true,
+            minFilter: THREE.LinearMipmapLinearFilter 
+        });
+        const cubeCamera = new THREE.CubeCamera(0.1, 100, cubeRenderTarget);
+        scene.add(cubeCamera); 
+
+        // --- 2. 빛 ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); 
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0x0C2836, 1.0); 
+        directionalLight.position.set(-0.5, 1, 1.8);
+        scene.add(directionalLight);
+
+        // --- 3. 이미지 패널 생성 ---
+        const imageUrls = [];
+        const totalImageCount = 30; 
+        for (let i = 1; i <= totalImageCount; i++) {
+            imageUrls.push(`web-source/${i}.jpg`); 
+        }
+
+        const textureLoader = new THREE.TextureLoader();
+
+        const sphereRadius = 8; 
+        const numLayers = 5; 
+        const imagesPerLayer = Math.ceil(totalImageCount / numLayers); 
+        const layerSpacingAngle = Math.PI * 0.10;
+        
+        const phiLayers = [
+            Math.PI * 0.5 - layerSpacingAngle * 2,
+            Math.PI * 0.5 - layerSpacingAngle * 1,
+            Math.PI * 0.5,
+            Math.PI * 0.5 + layerSpacingAngle * 1,
+            Math.PI * 0.5 + layerSpacingAngle * 2
+        ];
+        
+        const imageMeshes = [];
+        const imageUrlsMap = new Map(); 
+
+        const targetPositions = []; 
+        let animationProgress = 0; 
+        const animationDuration = 200; 
+        
+        // 💡 5. 커서 상태 변수 (핸들링 시 커서 모양 변경을 위해)
+        let isOverClickable = false;
+
+        imageUrls.forEach((url, index) => {
+            textureLoader.load(url, (texture) => {
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.generateMipmaps = false; 
+
+                const aspectRatio = texture.image.width / texture.image.height;
+                const maxDimension = 2.0; 
+                let planeWidth, planeHeight;
+
+                if (aspectRatio >= 1) { 
+                    planeWidth = maxDimension;
+                    planeHeight = planeWidth / aspectRatio; 
+                } else { 
+                    planeHeight = maxDimension;
+                    planeWidth = planeHeight * aspectRatio; 
+                }
+
+                const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+                const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true, opacity: 1 }); 
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                mesh.scale.set(0, 0, 0); 
+                
+                const fileNameMatch = url.match(/(\d+)\.jpg$/);
+                let targetPage;
+
+                if (fileNameMatch && fileNameMatch[1]) {
+                    const imageNumber = fileNameMatch[1];
+                    targetPage = `${imageNumber}.html`;
+                } else {
+                    targetPage = `page_default.html`; 
+                    console.warn(`파일명을 추출할 수 없어 기본 URL을 사용합니다: ${url}`);
+                }
+
+                imageUrlsMap.set(mesh, targetPage); 
+                imageMeshes.push(mesh); 
+
+                // 목표 위치 계산
+                const layerIndex = Math.floor(index / imagesPerLayer);
+                const phi = phiLayers[layerIndex];
+                const indexInLayer = index % imagesPerLayer;
+                
+                let startOffset = 0;
+                if (layerIndex % 2 !== 0) { 
+                    startOffset = (Math.PI / imagesPerLayer) / 2;
+                }
+                
+                const angleIncrement = (indexInLayer / imagesPerLayer) * Math.PI;
+                const theta_final_corrected = angleIncrement + startOffset + (Math.PI / 1.8); 
+
+                const finalPosition = new THREE.Vector3().setFromSphericalCoords(sphereRadius, phi, theta_final_corrected);
+                targetPositions.push(finalPosition); 
+                
+                // 초기 위치 설정 (카메라 앞 중앙)
+                mesh.position.set(0, 0, -5); 
+
+                mesh.renderOrder = 0; 
+                scene.add(mesh);
+            });
+        });
+
+        // --- 4. 커스텀 3D 모델 로드 ---
+        const gltfLoader = new GLTFLoader();
+        let controller; 
+        
+        gltfLoader.load(
+            'model.glb', 
+            (gltf) => {
+                const model = gltf.scene;
+
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        const originalMaterial = child.material;
+                        if (originalMaterial.isMeshStandardMaterial) {
+                            originalMaterial.envMap = cubeRenderTarget.texture; 
+                            originalMaterial.needsUpdate = true;
+                            originalMaterial.depthTest = true; 
+                            child.renderOrder = 0; 
+                        }
+                    }
+                });
+
+                const box = new THREE.Box3().setFromObject(model);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                const maxAxis = Math.max(size.x, size.y, size.z);
+                const targetScale = 2.2 / maxAxis; 
+                const scaleMultiplier = 2; 
+                const finalScale = targetScale * scaleMultiplier;
+
+                model.scale.set(finalScale, finalScale, finalScale);
+                model.position.x -= center.x * finalScale;
+                model.position.y -= center.y * finalScale;
+                model.position.z -= center.z * finalScale; 
+
+                const container = new THREE.Object3D();
+                container.add(model);
+                
+                container.position.set(0, 0, -5); 
+
+                controller = container; 
+                camera.add(controller);
+                console.log("모델 로드 완료"); 
+            },
+            undefined,
+            (error) => {
+                console.error('모델 로드 실패:', error);
+            }
+        );
+        
+        // --- 5. 마우스 위치 추적 및 Raycaster ---
+        const raycaster = new THREE.Raycaster();
+        const mouseVector = new THREE.Vector2();
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        // 💡 6. 커스텀 커서 위치 업데이트 함수
+        const updateCustomCursor = (x, y) => {
+            customCursor.style.left = `${x}px`;
+            customCursor.style.top = `${y}px`;
+        };
+
+        function onMouseMove(event) {
+            // 💡 전역 커서 위치 업데이트
+            updateCustomCursor(event.clientX, event.clientY);
+            
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            // Raycaster 업데이트 (클릭 가능한 이미지 위에 있는지 체크)
+            mouseVector.x = mouseX;
+            mouseVector.y = mouseY;
+            raycaster.setFromCamera(mouseVector, camera);
+            const intersects = raycaster.intersectObjects(imageMeshes);
+            
+            const newIsOverClickable = intersects.length > 0;
+            
+            if (newIsOverClickable !== isOverClickable) {
+                isOverClickable = newIsOverClickable;
+                
+                // 💡 커서가 클릭 가능한 요소 위에 있을 때 모양 변경
+                if (isOverClickable) {
+                    customCursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                } else {
+                    customCursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                }
+            }
+        }
+
+        function onMouseClick(event) {
+            mouseVector.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseVector.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouseVector, camera);
+
+            const intersects = raycaster.intersectObjects(imageMeshes);
+
+            if (intersects.length > 0) {
+                const intersectedObject = intersects[0].object;
+                const targetUrl = imageUrlsMap.get(intersectedObject);
+
+                if (targetUrl) {
+                    console.log(`페이지 이동: ${targetUrl}`);
+                    window.location.href = targetUrl; 
+                }
+            }
+        }
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('click', onMouseClick);
+        
+        // 💡 터치 이벤트 처리 (터치에서도 커서 위치를 업데이트)
+        window.addEventListener('touchmove', (event) => {
+            if (event.touches.length > 0) {
+                updateCustomCursor(event.touches[0].clientX, event.touches[0].clientY);
+            }
+            // Three.js 로직은 mousemove와 동일하게 처리
+            onMouseMove({ 
+                clientX: event.touches[0].clientX, 
+                clientY: event.touches[0].clientY 
+            });
+        }, { passive: true });
+
+
+        // --- 6. 애니메이션 루프 (부드러운 움직임 구현) ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 이미지 펼침 애니메이션 (위치, 크기, 투명도)
+            if (animationProgress < animationDuration) {
+                animationProgress++;
+                const ratio = animationProgress / animationDuration; 
+                const easedRatio = 1 - Math.pow(1 - ratio, 3); 
+                
+                imageMeshes.forEach((mesh, index) => {
+                    const startPosition = new THREE.Vector3(0, 0, -5); 
+                    const targetPosition = targetPositions[index]; 
+
+                    mesh.position.lerpVectors(startPosition, targetPosition, easedRatio);
+                    mesh.scale.setScalar(easedRatio);
+                    mesh.lookAt(0, 0, 0); 
+                });
+            }
+
+
+            // 1. 카메라(시선) 회전
+            const targetCameraRotY = -mouseX * (Math.PI / 4); 
+            const targetCameraRotX = mouseY * (Math.PI / 6); 
+
+            yawObject.rotation.y += (targetCameraRotY - yawObject.rotation.y) * 0.05;
+            camera.rotation.x += (targetCameraRotX - camera.rotation.x) * 0.05;
+
+
+            // 2. 로고(모델) 회전
+            if (controller) {
+                const targetLogoRotY = mouseX * 0.5; 
+                const targetLogoRotX = -mouseY * 0.5;
+
+                controller.rotation.y += (targetLogoRotY - controller.rotation.y) * 0.1;
+                controller.rotation.x += (targetLogoRotX - controller.rotation.x) * 0.1;
+
+                // 3. 환경 맵 업데이트 (반사 효과)
+                controller.visible = false;
+                
+                cubeCamera.position.copy(yawObject.position);
+                cubeCamera.rotation.copy(yawObject.rotation); 
+                
+                cubeCamera.update(renderer, scene); 
+                controller.visible = true;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- 7. 창 크기 변경 대응 ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // --- 8. 메뉴 바 로직 ---
+        const hamburgerIcon = document.getElementById('hamburgerIcon');
+        const menuContainer = document.getElementById('menuContainer');
+        const menuClose = document.getElementById('menuClose');
+        
+        function toggleMenu() {
+            const isExpanded = menuContainer.classList.toggle('expanded');
+            
+            if (isExpanded) {
+                 // 확장되면 닫기 버튼이 보임
+                 menuClose.style.opacity = '1';
+                 menuClose.style.pointerEvents = 'auto';
+                 hamburgerIcon.style.opacity = '0'; // 햄버거 아이콘 숨김
+                 hamburgerIcon.style.pointerEvents = 'none';
+            } else {
+                 // 축소되면 닫기 버튼이 숨겨짐
+                 menuClose.style.opacity = '0';
+                 menuClose.style.pointerEvents = 'none';
+                 hamburgerIcon.style.opacity = '1'; // 햄버거 아이콘 표시
+                 hamburgerIcon.style.pointerEvents = 'auto';
+            }
+        }
+
+        // 햄버거 아이콘 클릭 시 메뉴 확장/축소
+        hamburgerIcon.addEventListener('click', toggleMenu);
+        
+        // 'X' 버튼 클릭 시 메뉴 축소
+        menuClose.addEventListener('click', toggleMenu);
+
+    </script>
+</body>
+</html>
